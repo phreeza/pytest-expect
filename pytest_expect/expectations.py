@@ -3,8 +3,11 @@
 import re
 import math
 import traceback
-from typing import Any, List, Optional, Pattern, Union
+from typing import Any, List, Optional, Pattern, Union, TYPE_CHECKING
 from dataclasses import dataclass, field
+
+if TYPE_CHECKING:
+    from .matchers import Matcher
 
 
 @dataclass
@@ -279,3 +282,33 @@ class Expect:
                 exception_type.__name__,
                 f"{type(e).__name__}: {e}",
             )
+
+    def that(self, actual: Any, matcher: "Matcher", msg: Optional[str] = None) -> bool:
+        """
+        Expect that actual matches the given matcher.
+
+        This provides a flexible way to compose complex expectations using matchers.
+
+        Args:
+            actual: The value to check
+            matcher: A Matcher object defining the matching condition
+            msg: Optional custom message
+
+        Returns:
+            bool: True if the matcher matched, False otherwise
+
+        Example:
+            from pytest_expect.matchers import Gt, Lt, AllOf
+            expect.that(5, AllOf(Gt(0), Lt(10)))
+        """
+        from .matchers import Matcher
+
+        if not isinstance(matcher, Matcher):
+            raise TypeError(f"Expected a Matcher, got {type(matcher).__name__}")
+
+        passed = matcher.matches(actual)
+        description = msg or f"Value should match: {matcher.describe()}"
+        expected = matcher.describe()
+        actual_desc = matcher.describe_mismatch(actual) if not passed else str(actual)
+
+        return self._record_expectation(passed, description, expected, actual_desc)
