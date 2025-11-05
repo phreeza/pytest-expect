@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "pytest-expect"
@@ -36,9 +36,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=6.0.0",
-    "black>=22.0.0",
-    "flake8>=4.0.0",
-    "mypy>=0.950",
+    "ruff>=0.8.0",
+    "pyright>=1.1.390",
 ]
 
 [project.urls]
@@ -50,22 +49,43 @@ Repository = "https://github.com/yourusername/pytest-expect"
 [project.entry-points.pytest11]
 expect = "pytest_expect.plugin"
 
-[tool.setuptools]
+[tool.hatch.build.targets.wheel]
 packages = ["pytest_expect"]
 
-[tool.setuptools.package-data]
-pytest_expect = ["py.typed"]
-
-[tool.black]
+[tool.ruff]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = "py38"
 
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+pythonVersion = "3.8"
+typeCheckingMode = "standard"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportUnknownLambdaType = false
+reportMissingParameterType = "warning"
+include = ["pytest_expect"]
+exclude = ["**/__pycache__", ".git", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
