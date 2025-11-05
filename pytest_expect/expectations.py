@@ -52,7 +52,10 @@ class ExpectationResult:
 
         summary = [
             f"\n{'=' * 70}",
-            f"EXPECTATION FAILURES: {failure_count} failed, {passed_count} passed, {self.total_expectations} total",
+            (
+                f"EXPECTATION FAILURES: {failure_count} failed, {passed_count} passed, "
+                f"{self.total_expectations} total"
+            ),
             f"{'=' * 70}",
         ]
 
@@ -87,12 +90,15 @@ class Expect:
             # Find the frame that's not in this file
             caller_frame = None
             for frame in reversed(stack[:-1]):  # Exclude current frame
-                if 'expectations.py' not in frame.filename:
+                if "expectations.py" not in frame.filename:
                     caller_frame = frame
                     break
 
             if caller_frame:
-                line_info = f"File \"{caller_frame.filename}\", line {caller_frame.lineno}, in {caller_frame.name}"
+                line_info = (
+                    f'File "{caller_frame.filename}", line {caller_frame.lineno}, '
+                    f"in {caller_frame.name}"
+                )
                 traceback_str = f"    {caller_frame.line}" if caller_frame.line else ""
             else:
                 line_info = "Unknown location"
@@ -155,7 +161,9 @@ class Expect:
     ) -> bool:
         """Expect that actual is close to expected (for floating point comparisons)."""
         passed = math.isclose(actual, expected, rel_tol=rel_tol, abs_tol=abs_tol)
-        description = msg or f"Value should be close to {expected!r} (rel_tol={rel_tol}, abs_tol={abs_tol})"
+        description = (
+            msg or f"Value should be close to {expected!r} (rel_tol={rel_tol}, abs_tol={abs_tol})"
+        )
         return self._record_expectation(passed, description, expected, actual)
 
     def matches(self, actual: str, pattern: Union[str, Pattern], msg: Optional[str] = None) -> bool:
@@ -167,7 +175,9 @@ class Expect:
 
         passed = pattern_obj.search(actual) is not None
         description = msg or f"String should match pattern {pattern_obj.pattern!r}"
-        return self._record_expectation(passed, description, f"match {pattern_obj.pattern!r}", actual)
+        return self._record_expectation(
+            passed, description, f"match {pattern_obj.pattern!r}", actual
+        )
 
     def contains(self, actual: Any, expected: Any, msg: Optional[str] = None) -> bool:
         """Expect that actual contains expected."""
@@ -209,7 +219,9 @@ class Expect:
         """Expect that actual is an instance of expected_type."""
         passed = isinstance(actual, expected_type)
         description = msg or f"Value should be instance of {expected_type.__name__}"
-        return self._record_expectation(passed, description, expected_type.__name__, type(actual).__name__)
+        return self._record_expectation(
+            passed, description, expected_type.__name__, type(actual).__name__
+        )
 
     def in_range(self, actual: Any, min_val: Any, max_val: Any, msg: Optional[str] = None) -> bool:
         """Expect that actual is in range [min_val, max_val]."""
@@ -228,13 +240,17 @@ class Expect:
         """Expect that actual is empty."""
         passed = len(actual) == 0
         description = msg or "Should be empty"
-        return self._record_expectation(passed, description, "empty (length 0)", f"length {len(actual)}")
+        return self._record_expectation(
+            passed, description, "empty (length 0)", f"length {len(actual)}"
+        )
 
     def is_not_empty(self, actual: Any, msg: Optional[str] = None) -> bool:
         """Expect that actual is not empty."""
         passed = len(actual) > 0
         description = msg or "Should not be empty"
-        return self._record_expectation(passed, description, "not empty (length > 0)", f"length {len(actual)}")
+        return self._record_expectation(
+            passed, description, "not empty (length > 0)", f"length {len(actual)}"
+        )
 
     def raises(self, exception_type: type, callable_obj: callable, *args, **kwargs) -> bool:
         """Expect that calling callable_obj raises the specified exception type."""
@@ -245,7 +261,7 @@ class Expect:
                 False,
                 f"Should raise {exception_type.__name__}",
                 exception_type.__name__,
-                "No exception raised"
+                "No exception raised",
             )
         except exception_type:
             # Expected exception was raised
@@ -253,7 +269,7 @@ class Expect:
                 True,
                 f"Should raise {exception_type.__name__}",
                 exception_type.__name__,
-                exception_type.__name__
+                exception_type.__name__,
             )
         except Exception as e:
             # Different exception was raised
@@ -261,5 +277,5 @@ class Expect:
                 False,
                 f"Should raise {exception_type.__name__}",
                 exception_type.__name__,
-                f"{type(e).__name__}: {e}"
+                f"{type(e).__name__}: {e}",
             )

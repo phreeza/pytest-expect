@@ -1,7 +1,6 @@
 """Tests for the expectations module."""
 
 import re
-import pytest
 
 
 def test_equal_passing(expect):
@@ -152,6 +151,7 @@ def test_is_not_empty(expect):
 
 def test_raises(expect):
     """Test raises expectations."""
+
     def raise_value_error():
         raise ValueError("test error")
 

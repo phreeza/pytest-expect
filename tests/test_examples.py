@@ -8,7 +8,7 @@ def test_user_data_validation(expect):
         "age": 30,
         "email": "john@example.com",
         "is_active": True,
-        "roles": ["user", "admin"]
+        "roles": ["user", "admin"],
     }
 
     # Check multiple properties without stopping at first failure
@@ -25,12 +25,8 @@ def test_api_response_validation(expect):
     response = {
         "status": "success",
         "code": 200,
-        "data": {
-            "id": 123,
-            "name": "Test Item",
-            "price": 19.99
-        },
-        "timestamp": 1234567890
+        "data": {"id": 123, "name": "Test Item", "price": 19.99},
+        "timestamp": 1234567890,
     }
 
     expect.equal(response["status"], "success")
