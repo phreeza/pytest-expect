@@ -18,9 +18,9 @@ Usage:
         expect.that([1, 2, 3], matchers.Contains(matchers.Gt(2)))
 """
 
-from .expectations import Expect, ExpectationResult, ExpectationFailure
-from .plugin import expect
 from . import matchers
+from .expectations import Expect, ExpectationFailure, ExpectationResult
+from .plugin import expect
 
 __version__ = "0.2.0"
 __all__ = [

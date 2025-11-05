@@ -1,8 +1,8 @@
 """Matcher system for pytest-expect, inspired by gmock matchers."""
 
 import re
-from typing import Any, Pattern, Type, Union
 from abc import ABC, abstractmethod
+from typing import Any, Pattern, Type, Union
 
 
 class Matcher(ABC):
@@ -31,7 +31,7 @@ class Matcher(ABC):
 class AnythingMatcher(Matcher):
     """Matches any value."""
 
-    def matches(self, value: Any) -> bool:
+    def matches(self, value: Any) -> bool:  # noqa: ARG002
         return True
 
     def describe(self) -> str:
@@ -285,10 +285,7 @@ class ContainsMatcher(Matcher):
 
     def matches(self, value: Any) -> bool:
         try:
-            for item in value:
-                if self.matcher.matches(item):
-                    return True
-            return False
+            return any(self.matcher.matches(item) for item in value)
         except TypeError:
             return False
 
@@ -510,10 +507,7 @@ class PropertyMatcher(Matcher):
 
     def matches(self, value: Any) -> bool:
         try:
-            if isinstance(value, dict):
-                prop_value = value[self.key]
-            else:
-                prop_value = getattr(value, self.key)
+            prop_value = value[self.key] if isinstance(value, dict) else getattr(value, self.key)
             return self.matcher.matches(prop_value)
         except (KeyError, AttributeError):
             return False
@@ -523,10 +517,7 @@ class PropertyMatcher(Matcher):
 
     def describe_mismatch(self, value: Any) -> str:
         try:
-            if isinstance(value, dict):
-                prop_value = value[self.key]
-            else:
-                prop_value = getattr(value, self.key)
+            prop_value = value[self.key] if isinstance(value, dict) else getattr(value, self.key)
             return f"property '{self.key}' {self.matcher.describe_mismatch(prop_value)}"
         except (KeyError, AttributeError):
             return f"has no property '{self.key}'"

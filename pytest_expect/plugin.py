@@ -1,6 +1,7 @@
 """Pytest plugin hooks for pytest-expect."""
 
 import pytest
+
 from .expectations import Expect, ExpectationResult
 
 

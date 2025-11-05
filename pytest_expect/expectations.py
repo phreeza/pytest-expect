@@ -1,10 +1,10 @@
 """Core expectation classes for pytest-expect."""
 
-import re
 import math
+import re
 import traceback
-from typing import Any, List, Optional, Pattern, Union, TYPE_CHECKING
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Pattern, Type, Union
 
 if TYPE_CHECKING:
     from .matchers import Matcher
@@ -171,10 +171,7 @@ class Expect:
 
     def matches(self, actual: str, pattern: Union[str, Pattern], msg: Optional[str] = None) -> bool:
         """Expect that actual matches the regex pattern."""
-        if isinstance(pattern, str):
-            pattern_obj = re.compile(pattern)
-        else:
-            pattern_obj = pattern
+        pattern_obj = re.compile(pattern) if isinstance(pattern, str) else pattern
 
         passed = pattern_obj.search(actual) is not None
         description = msg or f"String should match pattern {pattern_obj.pattern!r}"
@@ -255,7 +252,9 @@ class Expect:
             passed, description, "not empty (length > 0)", f"length {len(actual)}"
         )
 
-    def raises(self, exception_type: type, callable_obj: callable, *args, **kwargs) -> bool:
+    def raises(
+        self, exception_type: Type[BaseException], callable_obj: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> bool:
         """Expect that calling callable_obj raises the specified exception type."""
         try:
             callable_obj(*args, **kwargs)
