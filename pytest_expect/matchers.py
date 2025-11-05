@@ -524,6 +524,46 @@ class PropertyMatcher(Matcher):
 
 
 # =============================================================================
+# Callable Matchers
+# =============================================================================
+
+
+class ReturnsMatcher(Matcher):
+    """Matches callables that return a value matching the given matcher."""
+
+    def __init__(self, matcher: Union[Matcher, Any], *args: Any, **kwargs: Any):
+        self.matcher = _ensure_matcher(matcher)
+        self.args = args
+        self.kwargs = kwargs
+
+    def matches(self, value: Any) -> bool:
+        try:
+            if not callable(value):
+                return False
+            result = value(*self.args, **self.kwargs)
+            return self.matcher.matches(result)
+        except Exception:
+            return False
+
+    def describe(self) -> str:
+        args_str = ", ".join(repr(arg) for arg in self.args)
+        kwargs_str = ", ".join(f"{k}={v!r}" for k, v in self.kwargs.items())
+        call_args = ", ".join(filter(None, [args_str, kwargs_str]))
+        if call_args:
+            return f"callable returning {self.matcher.describe()} when called with ({call_args})"
+        return f"callable returning {self.matcher.describe()}"
+
+    def describe_mismatch(self, value: Any) -> str:
+        try:
+            if not callable(value):
+                return f"is not callable: {value!r}"
+            result = value(*self.args, **self.kwargs)
+            return f"returned {self.matcher.describe_mismatch(result)}"
+        except Exception as e:
+            return f"raised {type(e).__name__}: {e}"
+
+
+# =============================================================================
 # Numeric Matchers
 # =============================================================================
 
@@ -733,6 +773,23 @@ def Field(field_name: str, matcher: Union[Matcher, Any]) -> FieldMatcher:
 def Property(key: str, matcher: Union[Matcher, Any]) -> PropertyMatcher:
     """Match objects with a property/dict key matching a condition."""
     return PropertyMatcher(key, matcher)
+
+
+# Callable
+def Returns(matcher: Union[Matcher, Any], *args: Any, **kwargs: Any) -> ReturnsMatcher:
+    """Match callables that return a value matching the given matcher.
+
+    Args:
+        matcher: The matcher to apply to the return value
+        *args: Positional arguments to pass to the callable
+        **kwargs: Keyword arguments to pass to the callable
+
+    Example:
+        expect.that(lambda x: x * 2, Returns(10, 5))  # lambda returns 10 when called with 5
+        expect.that(str.upper, Returns("HELLO", "hello"))  # str.upper returns "HELLO"
+        expect.that(int, Returns(Gt(0), "42"))  # int("42") returns value > 0
+    """
+    return ReturnsMatcher(matcher, *args, **kwargs)
 
 
 # Numeric
