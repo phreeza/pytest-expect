@@ -298,6 +298,119 @@ def test_property_matcher_with_object(expect):
 
 
 # =============================================================================
+# Callable Matchers
+# =============================================================================
+
+
+def test_returns_matcher_basic(expect):
+    """Test Returns() matcher with simple callables."""
+    # Lambda returning exact value
+    expect.that(lambda: 42, matchers.Returns(42))
+
+    # Function with no arguments
+    def get_five():
+        return 5
+
+    expect.that(get_five, matchers.Returns(5))
+
+
+def test_returns_matcher_with_args(expect):
+    """Test Returns() matcher with positional arguments."""
+    # Lambda with arguments
+    expect.that(lambda x: x * 2, matchers.Returns(10, 5))
+    expect.that(lambda x, y: x + y, matchers.Returns(7, 3, 4))
+
+    # Built-in functions
+    expect.that(abs, matchers.Returns(5, -5))
+    expect.that(len, matchers.Returns(3, [1, 2, 3]))
+
+
+def test_returns_matcher_with_kwargs(expect):
+    """Test Returns() matcher with keyword arguments."""
+
+    def greet(name, greeting="Hello"):
+        return f"{greeting}, {name}!"
+
+    expect.that(greet, matchers.Returns("Hello, Alice!", "Alice"))
+    expect.that(greet, matchers.Returns("Hi, Bob!", "Bob", greeting="Hi"))
+
+
+def test_returns_matcher_with_args_and_kwargs(expect):
+    """Test Returns() matcher with both positional and keyword arguments."""
+
+    def calculate(a, b, operation="add"):
+        if operation == "add":
+            return a + b
+        elif operation == "multiply":
+            return a * b
+        return 0
+
+    expect.that(calculate, matchers.Returns(15, 10, 5))
+    expect.that(calculate, matchers.Returns(50, 10, 5, operation="multiply"))
+
+
+def test_returns_matcher_with_matchers(expect):
+    """Test Returns() with matchers instead of exact values."""
+    # Using comparison matchers
+    expect.that(lambda x: x * 2, matchers.Returns(matchers.Gt(5), 3))
+    expect.that(lambda: "hello", matchers.Returns(matchers.StartsWith("hel")))
+    expect.that(lambda x: abs(x), matchers.Returns(matchers.InRange(0, 10), -5))
+
+    # Using type matchers
+    expect.that(str, matchers.Returns(matchers.A(str), 42))
+    expect.that(int, matchers.Returns(matchers.Gt(0), "42"))
+
+
+def test_returns_matcher_with_composite(expect):
+    """Test Returns() combined with composite matchers."""
+
+    def process(value):
+        return value * 2
+
+    # Returns a value that is greater than 5 AND less than 15
+    expect.that(
+        process,
+        matchers.Returns(matchers.AllOf(matchers.Gt(5), matchers.Lt(15)), 6),
+    )
+
+
+def test_returns_matcher_with_methods(expect):
+    """Test Returns() with methods."""
+    # String methods
+    expect.that(str.upper, matchers.Returns("HELLO", "hello"))
+    expect.that(str.lower, matchers.Returns("world", "WORLD"))
+    expect.that(str.replace, matchers.Returns("hello world", "hello there", "there", "world"))
+
+
+def test_returns_matcher_with_containers(expect):
+    """Test Returns() with functions returning containers."""
+    expect.that(lambda: [1, 2, 3], matchers.Returns(matchers.Contains(2)))
+    expect.that(lambda x: [x, x * 2, x * 3], matchers.Returns(matchers.ElementsAre(2, 4, 6), 2))
+
+
+def test_returns_matcher_descriptions():
+    """Test that Returns matcher has proper descriptions."""
+    # No arguments
+    matcher = matchers.Returns(42)
+    assert "callable returning" in matcher.describe()
+    assert "equal to 42" in matcher.describe()
+
+    # With arguments
+    matcher_with_args = matchers.Returns(10, 5)
+    desc = matcher_with_args.describe()
+    assert "callable returning" in desc
+    assert "when called with" in desc
+    assert "5" in desc
+
+    # With kwargs
+    matcher_with_kwargs = matchers.Returns(10, x=5)
+    desc = matcher_with_kwargs.describe()
+    assert "callable returning" in desc
+    assert "when called with" in desc
+    assert "x=5" in desc
+
+
+# =============================================================================
 # Numeric Matchers
 # =============================================================================
 
