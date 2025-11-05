@@ -253,7 +253,11 @@ class Expect:
         )
 
     def raises(
-        self, exception_type: Type[BaseException], callable_obj: Callable[..., Any], *args: Any, **kwargs: Any
+        self,
+        exception_type: Type[BaseException],
+        callable_obj: Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """Expect that calling callable_obj raises the specified exception type."""
         try:
