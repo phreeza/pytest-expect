@@ -150,9 +150,9 @@ def test_with_custom_messages(expect):
     )
 ```
 
-## Matchers (v0.2.0+)
+## Matchers
 
-pytest-expect now includes a powerful matcher system inspired by Google Mock (gmock), allowing you to compose complex expectations in a readable way.
+pytest-expect includes a powerful matcher system inspired by Google Mock (gmock), allowing you to compose complex expectations in a readable way.
 
 ### Using Matchers
 
@@ -406,30 +406,6 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Changelog
-
-### 0.2.0 (Matcher System)
-- **NEW**: Comprehensive matcher system inspired by Google Mock (gmock)
-- Added `expect.that(value, matcher)` for flexible expectations
-- Wildcard matchers: `_`, `A(type)`, `An(type)`, `ExactType(type)`
-- Type matching: `A()` / `An()` accept subclasses, `ExactType()` requires exact type
-- Comparison matchers: `Eq`, `Ne`, `Lt`, `Le`, `Gt`, `Ge`, `IsNone`, `NotNone`
-- String matchers: `StrEq`, `StrCaseEq`, `HasSubstr`, `StartsWith`, `EndsWith`, `MatchesRegex`, `ContainsRegex`
-- Container matchers: `Contains`, `ElementsAre`, `UnorderedElementsAre`, `IsEmpty`, `SizeIs`, `Each`
-- Composite matchers: `AllOf`, `AnyOf`, `Not`
-- Field/Property matchers: `Field`, `Property`
-- Numeric matchers: `Close`, `InRange`
-- Support for deeply nested and complex matcher compositions
-- All matchers are fully composable and work with `expect.that()`
-
-### 0.1.0 (Initial Release)
-- Initial release with core expectation methods
-- Support for equality, comparison, and type checks
-- String matching and regex support
-- Collection validation helpers
-- Exception testing support
-- Comprehensive failure reporting
 
 ## Support
 
