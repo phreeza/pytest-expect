@@ -150,6 +150,196 @@ def test_with_custom_messages(expect):
     )
 ```
 
+## Matchers (v0.2.0+)
+
+pytest-expect now includes a powerful matcher system inspired by Google Mock (gmock), allowing you to compose complex expectations in a readable way.
+
+### Using Matchers
+
+Use `expect.that(value, matcher)` with any matcher:
+
+```python
+from pytest_expect import matchers
+
+def test_with_matchers(expect):
+    # Simple matchers
+    expect.that(42, matchers.Gt(40))
+    expect.that("hello", matchers.StartsWith("hel"))
+
+    # Composite matchers
+    expect.that(
+        5,
+        matchers.AllOf(matchers.Gt(0), matchers.Lt(10))
+    )
+
+    # Container matchers
+    expect.that(
+        [1, 2, 3, 4, 5],
+        matchers.Each(matchers.Gt(0))
+    )
+```
+
+### Matcher Categories
+
+#### Wildcard Matchers
+- `matchers._` - Matches any value
+- `matchers.A(type)` / `matchers.An(type)` - Matches any value of the given type **or subclass**
+- `matchers.ExactType(type)` - Matches only exact type (subclasses not accepted)
+
+```python
+expect.that(42, matchers._)  # Always passes
+expect.that("hello", matchers.A(str))
+expect.that([1, 2], matchers.An(list))
+
+# Type matching with subclasses
+class Animal:
+    pass
+
+class Dog(Animal):
+    pass
+
+dog = Dog()
+expect.that(dog, matchers.A(Animal))  # ✓ Passes - Dog is subclass of Animal
+expect.that(dog, matchers.ExactType(Dog))  # ✓ Passes - exact type match
+# expect.that(dog, matchers.ExactType(Animal))  # ✗ Would fail - not exact type
+
+# Note: In Python, bool is a subclass of int
+expect.that(True, matchers.A(int))  # ✓ Passes
+expect.that(True, matchers.ExactType(bool))  # ✓ Passes
+# expect.that(True, matchers.ExactType(int))  # ✗ Would fail
+```
+
+#### Comparison Matchers
+- `matchers.Eq(value)` - Equal to
+- `matchers.Ne(value)` - Not equal to
+- `matchers.Lt(value)` - Less than
+- `matchers.Le(value)` - Less than or equal
+- `matchers.Gt(value)` - Greater than
+- `matchers.Ge(value)` - Greater than or equal
+- `matchers.IsNone()` - Is None
+- `matchers.NotNone()` - Is not None
+
+```python
+expect.that(5, matchers.Gt(3))
+expect.that(10, matchers.Le(10))
+expect.that(None, matchers.IsNone())
+```
+
+#### String Matchers
+- `matchers.StrEq(string)` - String equality
+- `matchers.StrCaseEq(string)` - Case-insensitive equality
+- `matchers.HasSubstr(substring)` - Contains substring
+- `matchers.StartsWith(prefix)` - Starts with prefix
+- `matchers.EndsWith(suffix)` - Ends with suffix
+- `matchers.MatchesRegex(pattern)` - Full regex match
+- `matchers.ContainsRegex(pattern)` - Partial regex match
+
+```python
+expect.that("Hello World", matchers.StrCaseEq("hello world"))
+expect.that("test@example.com", matchers.ContainsRegex(r"\w+@\w+"))
+expect.that("filename.txt", matchers.EndsWith(".txt"))
+```
+
+#### Container Matchers
+- `matchers.Contains(matcher)` - Has element matching matcher
+- `matchers.ElementsAre(*matchers)` - Exact elements in order
+- `matchers.UnorderedElementsAre(*matchers)` - Exact elements, any order
+- `matchers.IsEmpty()` - Empty container
+- `matchers.SizeIs(size_or_matcher)` - Specific size
+- `matchers.Each(matcher)` - All elements match
+
+```python
+expect.that([1, 2, 3], matchers.Contains(matchers.Gt(2)))
+expect.that([1, 2, 3], matchers.ElementsAre(1, 2, 3))
+expect.that([3, 1, 2], matchers.UnorderedElementsAre(1, 2, 3))
+expect.that([2, 4, 6], matchers.Each(matchers.Gt(0)))
+expect.that([1, 2, 3], matchers.SizeIs(matchers.Gt(2)))
+```
+
+#### Composite Matchers
+- `matchers.AllOf(*matchers)` - All matchers must match (AND)
+- `matchers.AnyOf(*matchers)` - At least one matcher matches (OR)
+- `matchers.Not(matcher)` - Negates a matcher
+
+```python
+# Value between 0 and 100
+expect.that(42, matchers.AllOf(matchers.Gt(0), matchers.Lt(100)))
+
+# Either negative or greater than 100
+expect.that(-5, matchers.AnyOf(matchers.Lt(0), matchers.Gt(100)))
+
+# Not equal to 42
+expect.that(43, matchers.Not(matchers.Eq(42)))
+```
+
+#### Field/Property Matchers
+- `matchers.Field(name, matcher)` - Object attribute matches
+- `matchers.Property(key, matcher)` - Dict key or property matches
+
+```python
+class User:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+user = User("Alice", 30)
+expect.that(user, matchers.Field("name", "Alice"))
+expect.that(user, matchers.Field("age", matchers.Gt(25)))
+
+data = {"status": "success", "code": 200}
+expect.that(data, matchers.Property("code", matchers.Eq(200)))
+```
+
+#### Numeric Matchers
+- `matchers.Close(value, rel_tol=1e-9, abs_tol=0.0)` - Floating point comparison
+- `matchers.InRange(min, max)` - Value in range
+
+```python
+expect.that(3.14159, matchers.Close(3.14, abs_tol=0.01))
+expect.that(5, matchers.InRange(1, 10))
+```
+
+### Complex Matcher Examples
+
+```python
+def test_complex_data_validation(expect):
+    """Validate complex nested data structures."""
+    users = [
+        {"name": "Alice", "age": 30, "email": "alice@example.com"},
+        {"name": "Bob", "age": 25, "email": "bob@example.com"},
+    ]
+
+    # Check that users list contains a user named Bob who is under 30
+    expect.that(
+        users,
+        matchers.Contains(
+            matchers.AllOf(
+                matchers.Property("name", "Bob"),
+                matchers.Property("age", matchers.Lt(30))
+            )
+        )
+    )
+
+    # All users have valid email addresses
+    expect.that(
+        users,
+        matchers.Each(
+            matchers.Property("email", matchers.ContainsRegex(r"\w+@\w+\.\w+"))
+        )
+    )
+
+    # Nested list validation
+    matrix = [[1, 2], [3, 4], [5, 6]]
+    expect.that(
+        matrix,
+        matchers.ElementsAre(
+            matchers.ElementsAre(1, 2),
+            matchers.ElementsAre(3, 4),
+            matchers.ElementsAre(5, 6),
+        )
+    )
+```
+
 ## Why pytest-expect?
 
 Traditional pytest assertions stop at the first failure:
@@ -218,6 +408,20 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Changelog
+
+### 0.2.0 (Matcher System)
+- **NEW**: Comprehensive matcher system inspired by Google Mock (gmock)
+- Added `expect.that(value, matcher)` for flexible expectations
+- Wildcard matchers: `_`, `A(type)`, `An(type)`, `ExactType(type)`
+- Type matching: `A()` / `An()` accept subclasses, `ExactType()` requires exact type
+- Comparison matchers: `Eq`, `Ne`, `Lt`, `Le`, `Gt`, `Ge`, `IsNone`, `NotNone`
+- String matchers: `StrEq`, `StrCaseEq`, `HasSubstr`, `StartsWith`, `EndsWith`, `MatchesRegex`, `ContainsRegex`
+- Container matchers: `Contains`, `ElementsAre`, `UnorderedElementsAre`, `IsEmpty`, `SizeIs`, `Each`
+- Composite matchers: `AllOf`, `AnyOf`, `Not`
+- Field/Property matchers: `Field`, `Property`
+- Numeric matchers: `Close`, `InRange`
+- Support for deeply nested and complex matcher compositions
+- All matchers are fully composable and work with `expect.that()`
 
 ### 0.1.0 (Initial Release)
 - Initial release with core expectation methods
