@@ -39,7 +39,7 @@ class AnythingMatcher(Matcher):
 
 
 class TypeMatcher(Matcher):
-    """Matches any value of a specific type."""
+    """Matches any value of a specific type (including subclasses)."""
 
     def __init__(self, expected_type: Type):
         self.expected_type = expected_type
@@ -52,6 +52,25 @@ class TypeMatcher(Matcher):
 
     def describe_mismatch(self, value: Any) -> str:
         return f"was {type(value).__name__}: {value!r}"
+
+
+class ExactTypeMatcher(Matcher):
+    """Matches values of an exact type (subclasses not accepted)."""
+
+    def __init__(self, expected_type: Type):
+        self.expected_type = expected_type
+
+    def matches(self, value: Any) -> bool:
+        return type(value) == self.expected_type  # noqa: E721 - exact type check required
+
+    def describe(self) -> str:
+        return f"exactly type {self.expected_type.__name__}"
+
+    def describe_mismatch(self, value: Any) -> str:
+        actual_type = type(value)
+        if isinstance(value, self.expected_type):
+            return f"was subclass {actual_type.__name__}: {value!r}"
+        return f"was {actual_type.__name__}: {value!r}"
 
 
 # =============================================================================
@@ -576,13 +595,18 @@ _ = AnythingMatcher()
 
 
 def A(type_: Type) -> TypeMatcher:
-    """Match any value of the given type."""
+    """Match any value of the given type (including subclasses)."""
     return TypeMatcher(type_)
 
 
 def An(type_: Type) -> TypeMatcher:
-    """Alias for A() - match any value of the given type."""
+    """Alias for A() - match any value of the given type (including subclasses)."""
     return TypeMatcher(type_)
+
+
+def ExactType(type_: Type) -> ExactTypeMatcher:
+    """Match values of exactly the given type (subclasses not accepted)."""
+    return ExactTypeMatcher(type_)
 
 
 # Comparison

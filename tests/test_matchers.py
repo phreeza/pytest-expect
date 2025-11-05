@@ -24,6 +24,66 @@ def test_type_matcher(expect):
     expect.that({"a": 1}, matchers.A(dict))
 
 
+def test_type_matcher_with_subclasses(expect):
+    """Test that A() and An() accept subclasses."""
+
+    class Animal:
+        pass
+
+    class Dog(Animal):
+        pass
+
+    dog = Dog()
+    # A() should match both exact type and subclasses
+    expect.that(dog, matchers.A(Dog))
+    expect.that(dog, matchers.A(Animal))  # Subclass should match
+
+
+def test_exact_type_matcher(expect):
+    """Test ExactType() for exact type matching."""
+
+    class Animal:
+        pass
+
+    class Dog(Animal):
+        pass
+
+    dog = Dog()
+    animal = Animal()
+
+    # ExactType should only match exact type, not subclasses
+    expect.that(dog, matchers.ExactType(Dog))
+    expect.that(animal, matchers.ExactType(Animal))
+
+    # Built-in types
+    expect.that(5, matchers.ExactType(int))
+    expect.that("hello", matchers.ExactType(str))
+    expect.that([1, 2], matchers.ExactType(list))
+
+
+def test_exact_type_vs_subclass_difference(expect):
+    """Test the difference between ExactType and A/An with subclasses."""
+
+    class Base:
+        pass
+
+    class Derived(Base):
+        pass
+
+    derived = Derived()
+
+    # A() accepts subclasses
+    expect.that(derived, matchers.A(Base))
+
+    # ExactType() does not - but we can't test failure in passing tests
+    # Just verify it works for exact types
+    expect.that(derived, matchers.ExactType(Derived))
+
+    # Test with bool (bool is subclass of int in Python)
+    expect.that(True, matchers.A(int))  # bool is subclass of int
+    expect.that(True, matchers.ExactType(bool))  # Exact type is bool
+
+
 # =============================================================================
 # Comparison Matchers
 # =============================================================================

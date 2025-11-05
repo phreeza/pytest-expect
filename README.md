@@ -183,12 +183,30 @@ def test_with_matchers(expect):
 
 #### Wildcard Matchers
 - `matchers._` - Matches any value
-- `matchers.A(type)` / `matchers.An(type)` - Matches any value of the given type
+- `matchers.A(type)` / `matchers.An(type)` - Matches any value of the given type **or subclass**
+- `matchers.ExactType(type)` - Matches only exact type (subclasses not accepted)
 
 ```python
 expect.that(42, matchers._)  # Always passes
 expect.that("hello", matchers.A(str))
 expect.that([1, 2], matchers.An(list))
+
+# Type matching with subclasses
+class Animal:
+    pass
+
+class Dog(Animal):
+    pass
+
+dog = Dog()
+expect.that(dog, matchers.A(Animal))  # ✓ Passes - Dog is subclass of Animal
+expect.that(dog, matchers.ExactType(Dog))  # ✓ Passes - exact type match
+# expect.that(dog, matchers.ExactType(Animal))  # ✗ Would fail - not exact type
+
+# Note: In Python, bool is a subclass of int
+expect.that(True, matchers.A(int))  # ✓ Passes
+expect.that(True, matchers.ExactType(bool))  # ✓ Passes
+# expect.that(True, matchers.ExactType(int))  # ✗ Would fail
 ```
 
 #### Comparison Matchers
@@ -394,7 +412,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ### 0.2.0 (Matcher System)
 - **NEW**: Comprehensive matcher system inspired by Google Mock (gmock)
 - Added `expect.that(value, matcher)` for flexible expectations
-- Wildcard matchers: `_`, `A(type)`, `An(type)`
+- Wildcard matchers: `_`, `A(type)`, `An(type)`, `ExactType(type)`
+- Type matching: `A()` / `An()` accept subclasses, `ExactType()` requires exact type
 - Comparison matchers: `Eq`, `Ne`, `Lt`, `Le`, `Gt`, `Ge`, `IsNone`, `NotNone`
 - String matchers: `StrEq`, `StrCaseEq`, `HasSubstr`, `StartsWith`, `EndsWith`, `MatchesRegex`, `ContainsRegex`
 - Container matchers: `Contains`, `ElementsAre`, `UnorderedElementsAre`, `IsEmpty`, `SizeIs`, `Each`
