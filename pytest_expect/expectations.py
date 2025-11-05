@@ -3,7 +3,7 @@
 import re
 import math
 import traceback
-from typing import Any, Optional, Pattern, Union
+from typing import Any, List, Optional, Pattern, Union
 from dataclasses import dataclass, field
 
 
@@ -31,7 +31,7 @@ class ExpectationFailure:
 class ExpectationResult:
     """Holds all expectation results for a test."""
 
-    failures: list[ExpectationFailure] = field(default_factory=list)
+    failures: List[ExpectationFailure] = field(default_factory=list)
     total_expectations: int = 0
 
     def add_failure(self, failure: ExpectationFailure) -> None:
