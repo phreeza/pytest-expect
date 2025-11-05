@@ -89,72 +89,9 @@ File "test_example.py", line 8, in test_user_validation
 
 - `expect.raises(exception_type, callable_obj, *args, **kwargs)` - Assert callable raises exception
 
-## Usage Examples
-
-### API Response Validation
-
-```python
-def test_api_response(expect):
-    response = {
-        "status": "success",
-        "code": 200,
-        "data": {"id": 123, "name": "Test"}
-    }
-
-    expect.equal(response["status"], "success")
-    expect.equal(response["code"], 200)
-    expect.is_not_none(response["data"])
-    expect.is_instance(response["data"]["id"], int)
-```
-
-### Form Validation
-
-```python
-def test_form_validation(expect):
-    form_data = {
-        "username": "john_doe",
-        "email": "john@example.com",
-        "age": 25,
-        "terms_accepted": True
-    }
-
-    expect.matches(form_data["username"], r"^[a-z_]+$")
-    expect.matches(form_data["email"], r"^[\w\.-]+@[\w\.-]+\.\w+$")
-    expect.in_range(form_data["age"], 18, 100)
-    expect.is_true(form_data["terms_accepted"])
-```
-
-### Data Processing
-
-```python
-def test_data_processing(expect):
-    numbers = [1, 2, 3, 4, 5]
-
-    expect.has_length(numbers, 5)
-    expect.is_not_empty(numbers)
-    expect.contains(numbers, 3)
-    expect.equal(sum(numbers), 15)
-    expect.greater_than(max(numbers), 0)
-```
-
-### With Custom Messages
-
-```python
-def test_with_custom_messages(expect):
-    value = 42
-
-    expect.greater_than(
-        value,
-        50,
-        msg="Value should be greater than 50 for premium users"
-    )
-```
-
-## Matchers
+### Matchers
 
 pytest-expect includes a powerful matcher system inspired by Google Mock (gmock), allowing you to compose complex expectations in a readable way.
-
-### Using Matchers
 
 Use `expect.that(value, matcher)` with any matcher:
 
@@ -178,8 +115,6 @@ def test_with_matchers(expect):
         matchers.Each(matchers.Gt(0))
     )
 ```
-
-### Matcher Categories
 
 #### Wildcard Matchers
 - `matchers._` - Matches any value
@@ -299,7 +234,55 @@ expect.that(3.14159, matchers.Close(3.14, abs_tol=0.01))
 expect.that(5, matchers.InRange(1, 10))
 ```
 
-### Complex Matcher Examples
+## Usage Examples
+
+### API Response Validation
+
+```python
+def test_api_response(expect):
+    response = {
+        "status": "success",
+        "code": 200,
+        "data": {"id": 123, "name": "Test"}
+    }
+
+    expect.equal(response["status"], "success")
+    expect.equal(response["code"], 200)
+    expect.is_not_none(response["data"])
+    expect.is_instance(response["data"]["id"], int)
+```
+
+### Form Validation
+
+```python
+def test_form_validation(expect):
+    form_data = {
+        "username": "john_doe",
+        "email": "john@example.com",
+        "age": 25,
+        "terms_accepted": True
+    }
+
+    expect.matches(form_data["username"], r"^[a-z_]+$")
+    expect.matches(form_data["email"], r"^[\w\.-]+@[\w\.-]+\.\w+$")
+    expect.in_range(form_data["age"], 18, 100)
+    expect.is_true(form_data["terms_accepted"])
+```
+
+### Data Processing
+
+```python
+def test_data_processing(expect):
+    numbers = [1, 2, 3, 4, 5]
+
+    expect.has_length(numbers, 5)
+    expect.is_not_empty(numbers)
+    expect.contains(numbers, 3)
+    expect.equal(sum(numbers), 15)
+    expect.greater_than(max(numbers), 0)
+```
+
+### Complex Data Validation with Matchers
 
 ```python
 def test_complex_data_validation(expect):
@@ -337,6 +320,19 @@ def test_complex_data_validation(expect):
             matchers.ElementsAre(3, 4),
             matchers.ElementsAre(5, 6),
         )
+    )
+```
+
+### With Custom Messages
+
+```python
+def test_with_custom_messages(expect):
+    value = 42
+
+    expect.greater_than(
+        value,
+        50,
+        msg="Value should be greater than 50 for premium users"
     )
 ```
 
